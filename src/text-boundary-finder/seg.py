@@ -32,8 +32,9 @@ class Seg:
             temp = temp.next
         return len
 
-    def getMiddle(self,start_node,end_node):
-        head = start_node
+    def getMiddle(self):
+        head = self.first_node
+        end_node = self.last_node
         if head != None:
             len = self.getLen(head,end_node)
             temp = head
