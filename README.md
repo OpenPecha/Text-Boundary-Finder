@@ -28,4 +28,4 @@ None
 Read the docs [here](https://wiki.openpecha.org).
 
 
-![search_v2 drawio](https://user-images.githubusercontent.com/37167893/222349382-613eb504-9d50-4eed-9ba5-852a00bf2ccd.png)
+![search_v2](https://user-images.githubusercontent.com/37167893/222349991-4c975e19-3573-4aee-8008-fc300f49e519.png)
