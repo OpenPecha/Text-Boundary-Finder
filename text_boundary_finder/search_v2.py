@@ -1,7 +1,8 @@
 from fuzzysearch import find_near_matches
-from verse_tokenizer import tokenize_verse
 from pathlib import Path
-from seg import Seg
+
+from text_boundary_finder.verse_tokenizer import tokenize_verse
+from text_boundary_finder.seg import Seg
 
 
 def push_segments(obj,texts):

@@ -1,5 +1,5 @@
-from pathlib import Path
 from fuzzysearch import find_near_matches
+from pathlib import Path
 from pathlib import Path
 import numpy as np
 

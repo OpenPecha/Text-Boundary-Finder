@@ -1,5 +1,4 @@
 import re
-from pathlib import Path
 
 
 def tokenize_verse(text):
