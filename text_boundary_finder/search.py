@@ -2,6 +2,8 @@ from fuzzysearch import find_near_matches
 from pathlib import Path
 from pathlib import Path
 import numpy as np
+from verse_tokenizer import tokenize_verse
+import os
 
 len_of_searched_elem = 30
 
@@ -10,15 +12,24 @@ def fuzzy_search(elem,pool):
     return matches
 
 def get_elements(text):
-    first_elem = text[:len_of_searched_elem]
-    last_elem = text[-len_of_searched_elem:]
-    mid_elem = text[int(len(text)/2)-int(len_of_searched_elem/2):int(len(text)/2)+int(len_of_searched_elem/2)]
-    return (first_elem,mid_elem,last_elem)
+    verses = tokenize_verse(text)
+    first_elems = verses[0:3]
+    last_elems = verses[-3:]
+    mid_elems = verses[int(len(verses)/2)-1:int(len(verses)/2)+2]
+    
+    return (first_elems,mid_elems,last_elems)
+
+def fuzzy_searches(elems,pool):
+    matches = []
+    for elem in elems:
+        matches.append(fuzzy_search(elem,pool))
+
+    return matches
 
 def closest_value(input_list, input_value,matches_comb):
   arr = np.asarray(input_list)
   i = (np.abs(arr - input_value)).argmin()
-  return matches_comb[i]
+  return i
 
 def get_closest_match(matches_comb,len_pool_text):
     dists = []
@@ -26,21 +37,46 @@ def get_closest_match(matches_comb,len_pool_text):
         first_match,_,last_match = match_comb
         cur_dist = last_match.end - first_match.start
         dists.append(cur_dist)
-        """ if not closest_dist:
-            closest_dist = cur_dist
-            closest_match = (first_match.start,last_match.end)
-        elif cur_dist < closest_dist:
-            closest_dist = cur_dist
-            closest_match = (first_match.start,last_match.end) """
-    val = closest_value(dists,len_pool_text,matches_comb)
-    return val
+    i = closest_value(dists,len_pool_text,matches_comb)
+    return matches_comb[i]
+
+def get_total_len_of_list_elems(elems):
+    len = 0
+    for elem in elems:
+        len+=len(elem)
+    return len
+
+def get_boundary_matches(elems_matches,elems,pos):
+    ret_elem = None
+    len_of_total_elems = get_total_len_of_list_elems(elems)
+    matches_comb = []
+    first_seg_matches,second_seg_matches,third_seg_matches = elems_matches
+    for first_seg_match in first_seg_matches:
+        for second_seg_match in second_seg_matches:
+            for third_seg_match in third_seg_matches:
+                matches_comb.append((first_seg_match,second_seg_match,third_seg_match))
+
+    closest_match = get_closest_match(matches_comb,len_of_total_elems)
+    if pos == "first":
+        ret_elem = closest_match[0]
+    elif pos == "last":
+        ret_elem = closest_match[-1]
+    else:
+        ret_elem = closest_match[1]
+    return ret_elem
+
 
 def search(searched_elem,pool_text):
     matches_comb = []
-    first_elem,mid_elem,last_elem = get_elements(searched_elem)
-    first_matches = fuzzy_search(first_elem,pool_text)
-    mid_matches = fuzzy_search(mid_elem,pool_text)
-    last_matches = fuzzy_search(last_elem,pool_text)
+    first_elems,mid_elems,last_elems = get_elements(searched_elem)
+    first_elems_matches = fuzzy_searches(first_elems,pool_text)
+    mid_elems_matches = fuzzy_searches(mid_elems,pool_text)
+    last_elems_matches = fuzzy_searches(last_elems,pool_text)
+
+    first_matches = get_boundary_matches(first_elems_matches,first_elems,pos="first")
+    mid_matches = get_boundary_matches(mid_elems_matches,mid_elems,pos="mid")
+    last_matches = get_boundary_matches(last_elems_matches,last_elems,pos="last")
+
 
     for first_match in first_matches:
         for mid_match in mid_matches:
@@ -55,6 +91,7 @@ def search(searched_elem,pool_text):
     return start,end
 
 if __name__ == "__main__":
-    search_text = Path("test/data/elem.txt").read_text(encoding="utf-8")
-    pool_text = Path("test/data/pool.txt").read_text(encoding="utf-8")
+    pwd = os.getcwd()
+    search_text = Path("./tests/data/elem.txt").read_text(encoding="utf-8")
+    pool_text = Path("./tests/data/pool.txt").read_text(encoding="utf-8")
     segs = search(search_text,pool_text)
