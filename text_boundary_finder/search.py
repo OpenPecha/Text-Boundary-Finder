@@ -1,6 +1,5 @@
 from fuzzysearch import find_near_matches
 from pathlib import Path
-from pathlib import Path
 import numpy as np
 from verse_tokenizer import tokenize_verse
 import os
@@ -26,7 +25,7 @@ def fuzzy_searches(elems,pool):
 
     return matches
 
-def closest_value(input_list, input_value,matches_comb):
+def closest_value(input_list, input_value):
   arr = np.asarray(input_list)
   i = (np.abs(arr - input_value)).argmin()
   return i
@@ -41,7 +40,7 @@ def get_closest_match(matches_comb,len_pool_text):
             continue
         cur_dist = last_match.end - first_match.start
         dists.append(cur_dist)
-    i = closest_value(dists,len_pool_text,matches_comb)
+    i = closest_value(dists,len_pool_text)
     return matches_comb[i]
 
 def get_total_len_of_list_elems(elems):
@@ -70,7 +69,7 @@ def check_valid_order(match_comb):
         return True
     return False
 
-def get_boundary_matches(elems,pos):
+def get_boundary_matches(elems,pool_text,pos):
     ret_elem = []
     elems_matches = fuzzy_searches(elems,pool_text)
     len_of_total_elems = get_total_len_of_list_elems(elems)
@@ -92,13 +91,15 @@ def get_boundary_matches(elems,pos):
     return ret_elem
 
 
-def search(searched_elem,pool_text):
+def search_text(searched_elem,pool_text):
     matches_comb = []
     first_elems,mid_elems,last_elems = get_elements(searched_elem)
-    first_matches = get_boundary_matches(first_elems,pos="first")
-    mid_matches = get_boundary_matches(mid_elems,pos="mid")
-    last_matches = get_boundary_matches(last_elems,pos="last")
-
+    first_matches = get_boundary_matches(first_elems,pool_text,pos="first")
+    mid_matches = get_boundary_matches(mid_elems,pool_text,pos="mid")
+    last_matches = get_boundary_matches(last_elems,pool_text,pos="last")
+    if 0 in (len(first_matches),len(mid_matches),len(last_matches)):
+        return
+    
     for first_match in first_matches:
         for mid_match in mid_matches:
             for last_match in last_matches:
@@ -113,7 +114,8 @@ def search(searched_elem,pool_text):
 
 if __name__ == "__main__":
     pwd = os.getcwd()
-    search_text = Path("./tests/data/elem.txt").read_text(encoding="utf-8")
+    target_text = Path("tests/data/elem.txt").read_text(encoding="utf-8")
     pool_text = Path("./tests/data/pool.txt").read_text(encoding="utf-8")
-    start,end = search(search_text,pool_text)
+    start,end = search_text(target_text,pool_text)
     Path("./tests/data/result.txt").write_text(pool_text[start:end])
+    print(pool_text[start:end])
