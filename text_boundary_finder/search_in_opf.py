@@ -27,7 +27,7 @@ def get_bases_path(opf_path):
         bases = sorted(bases, key=lambda path: os.path.basename(path))
     else:
         bases = meta["bases"].keys()
-        bases = [f"{opf_path}/{Path(opf_path).stem}/opf/base{base}" for base in bases]
+        bases = [f"{opf_path}/{Path(opf_path).stem}.opf/base/{base}.txt" for base in bases]
     return bases
 
 
@@ -42,6 +42,6 @@ def get_text_from_opf(opf_path,target_text):
 
 
 if __name__ == "__main__":
-    opf_path="data/P000800"
+    opf_path="data/P000791"
     target_text = Path("data/target.txt").read_text(encoding="utf-8")
     get_text_from_opf(opf_path,target_text)

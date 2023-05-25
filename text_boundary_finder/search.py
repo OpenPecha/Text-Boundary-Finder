@@ -7,7 +7,7 @@ import os
 len_of_searched_elem = 30
 
 def fuzzy_search(elem,pool):
-    matches = find_near_matches(elem,pool,max_l_dist=5)
+    matches = find_near_matches(elem,pool,max_l_dist=int(len(elem)/4))
     return matches
 
 def get_elements(text):
@@ -75,6 +75,8 @@ def get_boundary_matches(elems,pool_text,pos):
     len_of_total_elems = get_total_len_of_list_elems(elems)
     matches_comb = []
     first_seg_matches,second_seg_matches,third_seg_matches = elems_matches
+    if 0 in (len(first_seg_matches),len(second_seg_matches),len(third_seg_matches)):
+        return
     for first_seg_match in first_seg_matches:
         for second_seg_match in second_seg_matches:
             for third_seg_match in third_seg_matches:
@@ -97,7 +99,7 @@ def search_text(searched_elem,pool_text):
     first_matches = get_boundary_matches(first_elems,pool_text,pos="first")
     mid_matches = get_boundary_matches(mid_elems,pool_text,pos="mid")
     last_matches = get_boundary_matches(last_elems,pool_text,pos="last")
-    if 0 in (len(first_matches),len(mid_matches),len(last_matches)):
+    if None in (first_matches,mid_matches,last_matches):
         return
     
     for first_match in first_matches:
