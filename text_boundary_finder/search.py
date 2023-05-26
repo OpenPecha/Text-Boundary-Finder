@@ -1,60 +1,121 @@
 from fuzzysearch import find_near_matches
 from pathlib import Path
-from pathlib import Path
 import numpy as np
+from verse_tokenizer import tokenize_verse
 
-len_of_searched_elem = 30
+class TextSearcher:
 
-def fuzzy_search(elem,pool):
-    matches = find_near_matches(elem,pool,max_l_dist=5)
-    return matches
+    def fuzzy_search(self, elem, pool):
+        matches = find_near_matches(elem, pool, max_l_dist=int(len(elem)/4))
+        return matches
 
-def get_elements(text):
-    first_elem = text[:len_of_searched_elem]
-    last_elem = text[-len_of_searched_elem:]
-    mid_elem = text[int(len(text)/2)-int(len_of_searched_elem/2):int(len(text)/2)+int(len_of_searched_elem/2)]
-    return (first_elem,mid_elem,last_elem)
 
-def closest_value(input_list, input_value,matches_comb):
-  arr = np.asarray(input_list)
-  i = (np.abs(arr - input_value)).argmin()
-  return matches_comb[i]
+    def fuzzy_searches(self, elems, pool):
+        matches = []
+        for elem in elems:
+            matches.append(self.fuzzy_search(elem, pool))
+        return matches
+    
 
-def get_closest_match(matches_comb,len_pool_text):
-    dists = []
-    for match_comb in matches_comb:
-        first_match,_,last_match = match_comb
-        cur_dist = last_match.end - first_match.start
-        dists.append(cur_dist)
-        """ if not closest_dist:
-            closest_dist = cur_dist
-            closest_match = (first_match.start,last_match.end)
-        elif cur_dist < closest_dist:
-            closest_dist = cur_dist
-            closest_match = (first_match.start,last_match.end) """
-    val = closest_value(dists,len_pool_text,matches_comb)
-    return val
+    def get_elements(self, text):
+        verses = tokenize_verse(text)
+        first_elems = verses[0:3]
+        last_elems = verses[-3:]
+        mid_elems = verses[int(len(verses)/2)-1:int(len(verses)/2)+2]
+        return (first_elems, mid_elems, last_elems)
 
-def search(searched_elem,pool_text):
-    matches_comb = []
-    first_elem,mid_elem,last_elem = get_elements(searched_elem)
-    first_matches = fuzzy_search(first_elem,pool_text)
-    mid_matches = fuzzy_search(mid_elem,pool_text)
-    last_matches = fuzzy_search(last_elem,pool_text)
 
-    for first_match in first_matches:
-        for mid_match in mid_matches:
-            for last_match in last_matches:
-                matches_comb.append((first_match,mid_match,last_match))
+    def get_closest_value(self, input_list, input_value):
+        arr = np.asarray(input_list)
+        i = (np.abs(arr - input_value)).argmin()
+        return i
 
-    closest_match = get_closest_match(matches_comb,len(pool_text))
-    first_match,_,last_match= closest_match
-    start = first_match.start
-    end = last_match.end
 
-    return start,end
+    def get_total_len_of_list_elems(self, elems):
+        total_len= 0
+        for elem in elems:
+            total_len+=len(elem)
+        return total_len
+
+
+    def is_order_valid(self, match_comb):
+        first_match, mid_match, last_match = match_comb
+        if first_match.end <= mid_match.start and mid_match.end <= last_match.start:
+            return True
+        return False
+    
+
+    def get_closest_match(self, matches_comb, len_pool_text):
+        len_of_texts = []
+        for match_comb in matches_comb:
+            first_match, _, last_match = match_comb
+            valid_order = self.is_order_valid(match_comb)
+            if not valid_order:
+                len_of_texts.append(0)
+                continue
+            cur_len_of_text = last_match.end - first_match.start
+            len_of_texts.append(cur_len_of_text)
+        i = self.get_closest_value(len_of_texts, len_pool_text)
+        return matches_comb[i]
+
+
+    def get_nearest_match(self, matches_comb, len_of_total_elems):
+        nearest_matches = []
+        standard_threshold = int(len_of_total_elems/3*0.3)
+        for match_comb in matches_comb:
+            first_match, mid_match, last_match = match_comb
+            valid_order = self.is_order_valid(match_comb)
+            if not valid_order:
+                continue
+            elif (mid_match.start - first_match.end) < standard_threshold and (last_match.start - mid_match.end) < standard_threshold:
+                nearest_matches.append(match_comb)
+        return nearest_matches
+
+
+    def get_boundary_matches(self, elems, pool_text, pos):
+        boundary_matches = []
+        matches_comb = []
+        elems_matches = self.fuzzy_searches(elems, pool_text)
+        len_of_total_elems = self.get_total_len_of_list_elems(elems)
+        first_seg_matches, second_seg_matches, third_seg_matches = elems_matches
+        if 0 in (len(first_seg_matches), len(second_seg_matches), len(third_seg_matches)):
+            return
+        for first_seg_match in first_seg_matches:
+            for second_seg_match in second_seg_matches:
+                for third_seg_match in third_seg_matches:
+                    matches_comb.append([first_seg_match, second_seg_match, third_seg_match])
+        closest_matches = self.get_nearest_match(matches_comb, len_of_total_elems)
+        for closest_match in closest_matches:
+            if pos == "first":
+                boundary_matches.append(closest_match[0])
+            elif pos == "last":
+                boundary_matches.append(closest_match[-1])
+            else:
+                boundary_matches.append(closest_match[1])
+        return boundary_matches
+
+
+    def search_text(self,target_text,pool_text):
+        matches_comb = []
+        first_elems,mid_elems,last_elems = self.get_elements(target_text)
+        first_matches = self.get_boundary_matches(first_elems,pool_text,pos="first")
+        mid_matches = self.get_boundary_matches(mid_elems,pool_text,pos="mid")
+        last_matches = self.get_boundary_matches(last_elems,pool_text,pos="last")
+        if None in (first_matches,mid_matches,last_matches):
+            return
+        for first_match in first_matches:
+            for mid_match in mid_matches:
+                for last_match in last_matches:
+                    matches_comb.append((first_match,mid_match,last_match))
+        closest_match = self.get_closest_match(matches_comb,len(pool_text))
+        first_match,_,last_match= closest_match
+        start = first_match.start
+        end = last_match.end
+        return start,end
 
 if __name__ == "__main__":
-    search_text = Path("test/data/elem.txt").read_text(encoding="utf-8")
-    pool_text = Path("test/data/pool.txt").read_text(encoding="utf-8")
-    segs = search(search_text,pool_text)
+    obj = TextSearcher()
+    pool_text = Path("data/P000791/P000791.opf/base/v065.txt").read_text(encoding="utf-8")
+    print(pool_text[1116482:1243333])
+    target_text = Path("data/target.txt").read_text(encoding="utf-8")
+

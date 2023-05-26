@@ -1,8 +1,10 @@
 import re
-
+from pathlib import Path
+new_re = "([།]+ *)+"
 
 def tokenize_verse(text):
-    main_re = "([།༔གཀཤ] ?[།༔] ?)"
+    text = text.replace("\n","")
+    main_re =  "([།༔]+ ?[།༔]*)"
     verses = re.split(main_re,text)
     tokenized_sentence = []
     prev_element = ""
@@ -15,3 +17,11 @@ def tokenize_verse(text):
         prev_element = verse    
     return tokenized_sentence
 
+
+if __name__ == "__main__":
+    text = Path("tests/data/elem.txt").read_text(encoding="utf-8")
+    verses = tokenize_verse(text)
+    new_text =""
+    for verse in verses:
+        new_text+=verse+"\n"
+    Path("demo.txt").write_text(new_text)
