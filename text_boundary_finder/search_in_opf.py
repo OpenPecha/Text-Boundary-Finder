@@ -1,5 +1,5 @@
 from pathlib import Path
-import search
+from search import TextSearcher
 import yaml
 import os
 
@@ -34,14 +34,15 @@ def get_bases_path(opf_path):
 def get_text_from_opf(opf_path,target_text):
     bases_path = get_bases_path(opf_path)
     for base_path in bases_path:
-        print(base_path)
         base_text = Path(base_path).read_text(encoding="utf-8")
-        span = search.search_text(target_text,base_text)
+        searcher = TextSearcher()
+        span = searcher.search_text(target_text,base_text)
         if span:
+            print(base_path)
             print(span)
 
 
 if __name__ == "__main__":
-    opf_path="data/P000791"
+    opf_path="data/IB3BB1315"
     target_text = Path("data/target.txt").read_text(encoding="utf-8")
     get_text_from_opf(opf_path,target_text)
