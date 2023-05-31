@@ -115,7 +115,7 @@ class TextSearcher:
 
 if __name__ == "__main__":
     obj = TextSearcher()
-    pool_text = Path("data/P000791/P000791.opf/base/v065.txt").read_text(encoding="utf-8")
-    print(pool_text[1116482:1243333])
-    target_text = Path("data/target.txt").read_text(encoding="utf-8")
-
+    pool_text = Path("I2KG212406.txt").read_text(encoding="utf-8")
+    target_text = "ཡིད་ཀྱིས་ཀུན་ནས་སློང་བ་དེ་ནི་ལེན་པའི་རྐྱེན་གྱིས་སྲིད་པ་ཞེས་བྱའོ།"
+    match = obj.fuzzy_search(target_text,pool_text)
+    print(match)
