@@ -6,6 +6,9 @@ def tokenize_verse(text):
     text = text.replace("\n","")
     main_re =  "([།༔]+ ?[།༔]*)"
     verses = re.split(main_re,text)
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"་\s?་+", "་", text)
+
     tokenized_sentence = []
     prev_element = ""
     for verse in verses:
