@@ -120,6 +120,7 @@ class TextSearcher:
         start = first_match.start
         end = last_match.end
         return start,end
+    
 
 if __name__ == "__main__":
     obj = TextSearcher()
