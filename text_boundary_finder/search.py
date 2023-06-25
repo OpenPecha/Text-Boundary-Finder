@@ -37,8 +37,6 @@ class TextSearcher:
         return closest_index
 
 
-
-
     def get_total_len_of_list_elems(self, elems):
         total_len= 0
         for elem in elems:
