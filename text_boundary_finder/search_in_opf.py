@@ -12,7 +12,6 @@ try:
 except (ImportError, AttributeError):
     yaml_loader = yaml.SafeLoader
 
-
 def load_yaml(fn: Path) -> None:
     return yaml.load(fn.open(encoding="utf-8"), Loader=yaml_loader)
 
@@ -34,7 +33,6 @@ def get_bases_path(opf_path):
         bases = [f"{opf_path}/{Path(opf_path).stem}.opf/base/{base}.txt" for base in bases]
     return bases
 
-
 def fuzzy_search(elem, pool):
     matches = find_near_matches(elem, pool, max_l_dist=int(len(elem)/4))
     return matches
@@ -43,7 +41,12 @@ def get_random_element(lst):
     random_element = random.choice(lst)
     return random_element
 
-def get_text_from_opf(opf_path,target_text):
+def remove_english_words_and_numbers(text):
+    pattern = r'\b[a-zA-Z]+\b|\b[0-9]+\b'
+    cleaned_text = re.sub(pattern, '', text)
+    return cleaned_text
+
+def search_text_in_opf(opf_path,target_text):
     bases_path = get_bases_path(opf_path)
     for base_path in bases_path:
         print(base_path)
@@ -52,7 +55,6 @@ def get_text_from_opf(opf_path,target_text):
         searcher = TextSearcher()
         base_text=remove_english_words_and_numbers(base_text)
         verses = tokenize_verse(target_text)
-        #verses = mod_list(verses)
         for i in range(10):
             random_elem = get_random_element(verses)
             cur_matches = fuzzy_search(random_elem,base_text)
@@ -61,35 +63,10 @@ def get_text_from_opf(opf_path,target_text):
         if matches > 5:
             span = searcher.search_text(target_text,base_text)
             if span:
-                print(span)
-
-def mod_list(segments):
-    result = []
-    current_length = 0
-    cur_text = ""
-    for segment in segments:
-        if current_length >= 30:
-            result.append(cur_text)
-            current_length = len(segment)
-            cur_text=segment
-        else:
-            cur_text+=segment
-            current_length = len(cur_text)
-    return result
-            
-            
-
-def remove_english_words_and_numbers(text):
-    # Define the regular expression pattern to match English words and numbers
-    pattern = r'\b[a-zA-Z]+\b|\b[0-9]+\b'
-    
-    # Replace English words and numbers with an empty string
-    cleaned_text = re.sub(pattern, '', text)
-    
-    return cleaned_text
-
+                start,end = span
+                return base_text[start:end]
 
 if __name__ == "__main__":
     opf_path="data/I4DBEE949"
     target_text = Path("data/target.txt").read_text(encoding="utf-8")
-    get_text_from_opf(opf_path,target_text)
+    span = search_text_in_opf(opf_path,target_text)

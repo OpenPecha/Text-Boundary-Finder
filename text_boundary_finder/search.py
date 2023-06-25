@@ -1,6 +1,5 @@
 from fuzzysearch import find_near_matches
 from pathlib import Path
-import numpy as np
 from verse_tokenizer import tokenize_verse
 
 class TextSearcher:
@@ -25,10 +24,19 @@ class TextSearcher:
         return (first_elems, mid_elems, last_elems)
 
 
-    def get_closest_value(self, input_list, input_value):
-        arr = np.asarray(input_list)
-        i = (np.abs(arr - input_value)).argmin()
-        return i
+    def get_closest_value(input_list, input_value):
+        min_diff = float('inf')
+        closest_index = None
+
+        for i, value in enumerate(input_list):
+            diff = abs(value - input_value)
+            if diff < min_diff:
+                min_diff = diff
+                closest_index = i
+
+        return closest_index
+
+
 
 
     def get_total_len_of_list_elems(self, elems):
@@ -112,6 +120,7 @@ class TextSearcher:
         start = first_match.start
         end = last_match.end
         return start,end
+    
 
 if __name__ == "__main__":
     obj = TextSearcher()
