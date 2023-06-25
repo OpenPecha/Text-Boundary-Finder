@@ -46,7 +46,7 @@ def remove_english_words_and_numbers(text):
     cleaned_text = re.sub(pattern, '', text)
     return cleaned_text
 
-def get_text_from_opf(opf_path,target_text):
+def search_text_in_opf(opf_path,target_text):
     bases_path = get_bases_path(opf_path)
     for base_path in bases_path:
         print(base_path)
@@ -63,9 +63,10 @@ def get_text_from_opf(opf_path,target_text):
         if matches > 5:
             span = searcher.search_text(target_text,base_text)
             if span:
-                return span
+                start,end = span
+                return base_text[start:end]
 
 if __name__ == "__main__":
     opf_path="data/I4DBEE949"
     target_text = Path("data/target.txt").read_text(encoding="utf-8")
-    span = get_text_from_opf(opf_path,target_text)
+    span = search_text_in_opf(opf_path,target_text)
