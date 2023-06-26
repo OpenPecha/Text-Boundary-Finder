@@ -63,10 +63,13 @@ def search_text_in_opf(opf_path,target_text):
         if matches > 5:
             span = searcher.search_text(target_text,base_text)
             if span:
+                print("MATCHED FOUND")
                 start,end = span
                 return base_text[start:end]
 
 if __name__ == "__main__":
     opf_path="data/I4DBEE949"
-    target_text = Path("data/target.txt").read_text(encoding="utf-8")
-    span = search_text_in_opf(opf_path,target_text)
+    opf_path = "I13FB12F5"
+    target_text = Path("target.txt").read_text(encoding="utf-8")
+    target_text = search_text_in_opf(opf_path,target_text)
+    print(target_text)

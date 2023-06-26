@@ -24,7 +24,7 @@ class TextSearcher:
         return (first_elems, mid_elems, last_elems)
 
 
-    def get_closest_value(input_list, input_value):
+    def get_closest_value(self,input_list, input_value):
         min_diff = float('inf')
         closest_index = None
 
