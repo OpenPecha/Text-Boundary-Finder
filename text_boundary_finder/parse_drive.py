@@ -149,7 +149,6 @@ def main(folder_id):
             continue
         if base_text:
             print(f"Match found in {opf_id}")
-            print(base_text)
             create_subfolder_and_docs(folder_id,"OCR",f"OCR_{opf_id}",base_text)
 
 if __name__ == "__main__":
