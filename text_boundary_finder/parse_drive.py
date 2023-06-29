@@ -155,5 +155,4 @@ def main(folder_id):
 if __name__ == "__main__":
     #id = get_subfolders("1nf49zWrdFUQVcI7WRJntJiIZqEVJmgL0")
     folder_id = "1d7RhDdxOa1xa-C4Eb7brNuAtrNCXY0aV"
-    create_subfolder_and_docs(folder_id,"OCR","text_file","content of text")
-    #main(folder_id)
+    main(folder_id)
