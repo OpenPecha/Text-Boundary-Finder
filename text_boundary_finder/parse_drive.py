@@ -61,7 +61,7 @@ def get_target_text(folder_id):
         file_id = item['id']
         mime_type = item['mimeType']
         # Check if the file is a Google Docs file
-        if mime_type == 'application/vnd.google-apps.document':
+        if mime_type == 'application/vnd.google-apps.document' and "-1" in item["name"]:
             # Export the Google Docs file as plain text
             response = drive_service.files().export(fileId=file_id, mimeType='text/plain').execute()
             content = response.decode('utf-8')
@@ -140,6 +140,7 @@ def main(folder_id):
     excel_path = get_excel(folder_id)
     opf_ids = get_opf_ids(excel_path)
     target_text = get_target_text(folder_id)
+    print(target_text)
     opfs_path = "data/opfs"
     for opf_id in opf_ids:
         try:
@@ -153,5 +154,5 @@ def main(folder_id):
 
 if __name__ == "__main__":
     #id = get_subfolders("1nf49zWrdFUQVcI7WRJntJiIZqEVJmgL0")
-    folder_id = "1d7RhDdxOa1xa-C4Eb7brNuAtrNCXY0aV"
+    folder_id = "1U3NmkVNTnGIrm80OgbthE5rDpbJcMFKm"
     main(folder_id)
